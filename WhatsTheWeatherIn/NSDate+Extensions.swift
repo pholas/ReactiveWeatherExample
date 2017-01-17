@@ -8,40 +8,40 @@
 
 import Foundation
 
-extension NSDate {
+extension Date {
     
     ///Returns the time of a date formatted as "HH:mm" (e.g. 18:30)
-    func formattedTime(formatter: NSDateFormatter)-> String {
+    func formattedTime(_ formatter: DateFormatter)-> String {
         formatter.setLocalizedDateFormatFromTemplate("HH:mm")
-        return formatter.stringFromDate(self)
+        return formatter.string(from: self)
     }
     
     ///Returns a string in "d M" format, e.g. 19/9 for June 19.
-    func formattedDay(formatter: NSDateFormatter)-> String {
+    func formattedDay(_ formatter: DateFormatter)-> String {
         //the reason formatter is injected is because creating an
         //NSDateFormatter instance is pretty expensive
         formatter.setLocalizedDateFormatFromTemplate("d M")
-        return formatter.stringFromDate(self)
+        return formatter.string(from: self)
     }
     
     ///Returns the week day of the NSDate, e.g. Sunday.
-    func dayOfWeek(formatter: NSDateFormatter)-> String {
+    func dayOfWeek(_ formatter: DateFormatter)-> String {
         //the reason formatter is injected is because creating an
         //NSDateFormatter instance is pretty expensive
         formatter.setLocalizedDateFormatFromTemplate("EEEE")
-        return formatter.stringFromDate(self)
+        return formatter.string(from: self)
     }
 }
 
 
 //MARK: - Comparable
 
-extension NSDate: Comparable {}
 
-func ==(lhs: NSDate, rhs: NSDate) -> Bool {
-    return lhs.isEqualToDate(rhs)
+
+func ==(lhs: Date, rhs: Date) -> Bool {
+    return (lhs.compare(rhs).rawValue != 0)
 }
 
-public func <(lhs: NSDate, rhs: NSDate) -> Bool {
-    return lhs.earlierDate(rhs) === lhs
+public func <(lhs: Date, rhs: Date) -> Bool {
+    return lhs.compare(rhs).rawValue < 0
 }

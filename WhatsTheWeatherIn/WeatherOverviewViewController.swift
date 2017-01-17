@@ -28,8 +28,8 @@ final class WeatherOverviewViewController: UIViewController {
     
     //MARK: - Dependencies
     
-    private var viewModel: WeatherViewModel!
-    private let disposeBag = DisposeBag()
+    fileprivate var viewModel: WeatherViewModel!
+    fileprivate let disposeBag = DisposeBag()
     
     
 	//MARK: - Outlets
@@ -50,36 +50,36 @@ final class WeatherOverviewViewController: UIViewController {
 	
 	//MARK: - Lifecycle
     
-    private func addBindsToViewModel(viewModel: WeatherViewModel) {
+    fileprivate func addBindsToViewModel(_ viewModel: WeatherViewModel) {
         
-        cityTextField.rx_text
-            .bindTo(viewModel.searchText)
+        viewModel.searchText.asObservable()
+            .bindTo(cityTextField.rx.text)
             .addDisposableTo(disposeBag)
-        
+
         viewModel.cityName
-            .bindTo(cityNameLabel.rx_text)
+            .bindTo(cityNameLabel.rx.text)
             .addDisposableTo(disposeBag)
         
         viewModel.temp
-            .bindTo(cityDegreesLabel.rx_text)
+            .bindTo(cityDegreesLabel.rx.text)
             .addDisposableTo(disposeBag)
         
         viewModel.weatherDescription
-            .bindTo(weatherMessageLabel.rx_text)
+            .bindTo(weatherMessageLabel.rx.text)
             .addDisposableTo(disposeBag)
         
         viewModel.weatherImageData
             .map(UIImage.init)
-            .bindTo(weatherIconImageView.rx_image)
+            .bindTo(weatherIconImageView.rx.image)
             .addDisposableTo(disposeBag)
         
         viewModel.weatherBackgroundImage
             .map { $0.image }
-            .bindTo(weatherBackgroundImageView.rx_image)
+            .bindTo(weatherBackgroundImageView.rx.image)
             .addDisposableTo(disposeBag)
         
         viewModel.cellData
-            .bindTo(forecastsTableView.rx_itemsWithDataSource(self))
+            .bindTo(forecastsTableView.rx.items(dataSource: self))
             .addDisposableTo(disposeBag)
     }
 	
@@ -108,7 +108,7 @@ final class WeatherOverviewViewController: UIViewController {
     //tableView with RxSwift, please see 
     //https://github.com/ReactiveX/RxSwift/tree/master/RxExample
     //However this implementation is much simpler
-    private var tableViewData: [(day: String, forecasts: [ForecastModel])]? {
+    fileprivate var tableViewData: [(day: String, forecasts: [ForecastModel])]? {
         didSet {
             forecastsTableView.reloadData()
         }
@@ -120,34 +120,34 @@ final class WeatherOverviewViewController: UIViewController {
 extension WeatherOverviewViewController: UITableViewDataSource, RxTableViewDataSourceType {
     
     //Gets called on tableView.rx_elements.bindTo methods
-    func tableView(tableView: UITableView, observedEvent: Event<[(day: String, forecasts: [ForecastModel])]>) {
+    func tableView(_ tableView: UITableView, observedEvent: Event<[(day: String, forecasts: [ForecastModel])]>) {
         
         switch observedEvent {
-        case .Next(let items):
+        case .next(let items):
             tableViewData = items
-        case .Error(let error):
+        case .error(let error):
             print(error)
             presentError()
-        case .Completed:
+        case .completed:
             tableViewData = nil
         }
     }
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return tableViewData?.count ?? 0
     }
     
-    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return tableViewData?[section].day
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tableViewData?[section].forecasts.count ?? 0
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier("forecastCell", forIndexPath: indexPath) as! ForecastTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "forecastCell", for: indexPath) as! ForecastTableViewCell
         
         guard let forecast = tableViewData?[indexPath.section].forecasts[indexPath.row] else {
             return cell

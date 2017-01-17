@@ -14,7 +14,7 @@ import SwiftyJSON
 
 class WeatherAPIService {
     
-    private struct Constants {
+    fileprivate struct Constants {
         static let APPID = "6a700a1e919dc96b0a98901c9f4bec47"
         static let baseURL = "http://api.openweathermap.org/"
     }
@@ -28,8 +28,8 @@ class WeatherAPIService {
         }
     }
     
-    enum APIError: ErrorType {
-        case CannotParse
+    enum APIError: Error {
+        case cannotParse
     }
     
     func search(withCity city: String)-> Observable<Weather> {
@@ -37,25 +37,24 @@ class WeatherAPIService {
         let encodedCity = city.withPercentEncodedSpaces
         
         let params: [String: AnyObject] = [
-            "q": encodedCity,
-            "units": "metric",
-            "type": "like",
-            "APPID": Constants.APPID
+            "q": encodedCity as AnyObject,
+            "units": "metric" as AnyObject,
+            "type": "like" as AnyObject,
+            "APPID": Constants.APPID as AnyObject
         ]
         
-        return request(.GET, ResourcePath.Forecast.path, parameters: params, encoding: .URLEncodedInURL)
-            .rx_JSON()
+        return request(.get, ResourcePath.Forecast.path, parameters: params)
             .map(JSON.init)
             .flatMap { json -> Observable<Weather> in
                 guard let weather = Weather(json: json) else {
-                    return Observable.error(APIError.CannotParse)
+                    return Observable.error(APIError.cannotParse)
                 }
                 
                 return Observable.just(weather)
             }
     }
     
-    func weatherImage(forID imageID: String)-> Observable<NSData> {
-        return request(.GET, ResourcePath.Icon.path + imageID + ".png").rx_data()
+    func weatherImage(forID imageID: String)-> Observable<Data> {
+        return data(.get, ResourcePath.Icon.path + imageID + ".png")
     }
 }
